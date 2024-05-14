@@ -7,7 +7,7 @@ class CoreHelper:
         last = False
 
         while not last:
-            params = {'page': page, 'size': 1000}
+            params = {'versions':'latest', 'page':page, 'size':1000}
             result = requests.request('GET', apiUrl, params=params, headers=headers)
             #print(result.status_code)
             json_result = result.json()
@@ -16,3 +16,11 @@ class CoreHelper:
                 yield itemNode
             last = json_result['last']
             page += 1
+
+    def checkApi(apiUrl) -> int:
+        headers = {'content_type': 'application/json'}
+        params = {'versions':'latest', 'page':0, 'size':1}
+        result = requests.request('GET', apiUrl, params=params, headers=headers)
+        return result.status_code
+
+

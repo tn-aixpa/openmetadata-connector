@@ -2,28 +2,14 @@ import json
 from metadata.generated.schema.entity.data.table import (DataType, Constraint)
 
 class TableColumn:
-    name: str
-    type: DataType
-    constraint: Constraint
-    preview: list[str] = []
-
     def __init__(self, name, type):
-        self.name = name
-        self.type = type
+        self.name:str = name
+        self.type: DataType = type
+        self.constraint: Constraint = None
+        self.preview: list[str] = []
 
 
 class DataItemParser:
-    kind: str
-    project: str
-    name: str
-    version: str
-    path: str
-    key: str
-    source: str
-    dbName: str
-    dbSchema: str
-    dbTable: str
-    columns: list[TableColumn] = []
 
     def getDataType(type):
         try:
@@ -79,6 +65,7 @@ class PostgresParser(DataItemParser):
             self.dbSchema = "public"
             self.dbTable = self.name
 
+        self.columns: list[TableColumn] = []
         self.fillColumns(item)            
 
 
@@ -107,9 +94,11 @@ class S3Parser(DataItemParser):
         self.dbName = strings[0]
         self.dbTable = strings[len(strings)-1]
         self.dbSchema = ""
-        for s in strings:
-            self.dbSchema += "/" + s
+        for s in strings[1:len(strings)-1]:
+            self.dbSchema += s + "_"
+        self.dbSchema = self.dbSchema[:-1]
 
+        self.columns: list[TableColumn] = []        
         self.fillColumns(item)            
 
 

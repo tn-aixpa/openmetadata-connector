@@ -21,7 +21,9 @@ from metadata.generated.schema.entity.data.table import (
     DataType,
     Table,
 )
-from dh_openmetadata_connector import (PostgresParser, S3Parser, CoreHelper)
+from dh_openmetadata_connector.core_helper import (CoreHelper)
+from dh_openmetadata_connector.data_item import (PostgresParser, S3Parser)
+
 
 # DatabaseService -> Database -> Schema -> Table
 
@@ -80,7 +82,7 @@ def createTable(metadata, fullyQualifiedName, item):
     return table_entity
 
 def get_dataitems(metadata, postres_service, s3_service):
-    for itemNode in CoreHelper.getDataItems("http://localhost:8080/api/v1/dataitems"):
+    for itemNode in CoreHelper.getDataItems("http://localhost:9090/api/v1/dataitems"):
         if itemNode['spec']['path'].startswith("s3"):
             item = S3Parser(itemNode)
             database = createDatabase(metadata, s3_service.fullyQualifiedName, item.dbName)
@@ -95,7 +97,7 @@ server_config = OpenMetadataConnection(
     hostPort="http://localhost:8585/api",
     authProvider=AuthProvider.openmetadata,
     securityConfig=OpenMetadataJWTClientConfig(
-        jwtToken="eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImluZ2VzdGlvbi1ib3QiLCJlbWFpbCI6ImluZ2VzdGlvbi1ib3RAb3Blbm1ldGFkYXRhLm9yZyIsImlzQm90Ijp0cnVlLCJ0b2tlblR5cGUiOiJCT1QiLCJpYXQiOjE3MTEwMTE5NTEsImV4cCI6bnVsbH0.mUPL38HOlAUW0Zalzbu6Br95BeX67oPSJs4IxyuZTbM3Tr4w4UvH85xuFiRBxjtQEZorelz2AsY1UbTrH11E8IXteuM-LqvSWo5xrdZLwyQz6WDJpthK7u5cTShzbokeB8-mqPOXgE1gmxuxoTu674CAcxDnzteezMOCgBODAJgvfA97JRTkC_vm7puWaXqI8KCy87rpefft8LRyiB7jjGyXhzlYjE3OKxBCCbnjBkjB9Ps5V1ggEulCKTX2oW2x_JjHRxIwVWsjL9ZfZrYeEflSVkldARRtS0Ietu2-TfNIzxxmdeXAAyCq-bHFJt0cJUeSItzkiJL83Ah3JCysAg",
+        jwtToken="eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImluZ2VzdGlvbi1ib3QiLCJlbWFpbCI6ImluZ2VzdGlvbi1ib3RAb3Blbm1ldGFkYXRhLm9yZyIsImlzQm90Ijp0cnVlLCJ0b2tlblR5cGUiOiJCT1QiLCJpYXQiOjE3MTU2MDE2NzMsImV4cCI6bnVsbH0.ZHqpBVIBKR-iSMTSBGWpCWNK1113sHlWY-JeLvNDna8QQ3MOSItFjiTe-IAon_JzkCowbpgKX7OjsJhSW4TgiNToPVzcInAAQGBnTV8re-k3ql2RJAOXSjzf3thpLXM3JYbOcvMfsPgF9GbkgVz9y0Tr5Tsmmw-mmDZRLpontnUbpBSYwFvv2aihodPeFZgJJUUjtnghQQ1Q1GUZpxiwnHntIHnPYMHFTl6O3eh5uJvwV46cTdHC6R5KuitnmAAv9WPuu9OlmemswsOdodZaGTaIb0vUe05r139r3QiEPbfofGw-9tu7JOD5fZwE-wFjw2Th_peI6Wf8U5ftImYvsw",
     ),
 )
 
