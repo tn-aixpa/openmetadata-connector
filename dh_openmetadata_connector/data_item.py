@@ -18,6 +18,7 @@ class DataItemParser:
             return DataType.UNKNOWN
 
     def fillColumns(self, item):
+        self.columns: list[TableColumn] = []
         previewMap = {}
         if item['status'].get('preview') and item['status']['preview']['cols']:
             for col in item['status']['preview']['cols']:
@@ -65,7 +66,6 @@ class PostgresParser(DataItemParser):
             self.dbSchema = "public"
             self.dbTable = self.name
 
-        self.columns: list[TableColumn] = []
         self.fillColumns(item)            
 
 
@@ -98,7 +98,6 @@ class S3Parser(DataItemParser):
             self.dbSchema += s + "_"
         self.dbSchema = self.dbSchema[:-1]
 
-        self.columns: list[TableColumn] = []        
         self.fillColumns(item)            
 
 

@@ -29,8 +29,12 @@ from metadata.generated.schema.entity.data.table import (
 )
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
 from metadata.utils.logger import ingestion_logger
+
+from oauth2_client.credentials_manager import (CredentialManager, ServiceInformation, OAuthError)
+
 from dh_openmetadata_connector.core_helper import (CoreHelper)
 from dh_openmetadata_connector.data_item import (PostgresParser, S3Parser)
+
 import traceback
 
 logger = ingestion_logger()
@@ -44,6 +48,27 @@ class DigitalHubConnector(Source):
         self.config = config
         self.metadata = metadata
         self.service_connection = config.serviceConnection.__root__.config
+
+        try:
+            self.apiUrl: str = self.service_connection.connectionOptions.__root__.get("dhcore-api")
+            self.authorize_service: str = self.service_connection.connectionOptions.__root__.get("dhcore-authorize_service") 
+            self.token_service: str = self.service_connection.connectionOptions.__root__.get("dhcore-token_service")  
+            self.client_id: str = self.service_connection.connectionOptions.__root__.get("dhcore-client-id") 
+            self.client_secret: str = self.service_connection.connectionOptions.__root__.get("dhcore-client-secret") 
+            self.scopes: str = self.service_connection.connectionOptions.__root__.get("dhcore-scopes") 
+            self.service_information = ServiceInformation(
+                authorize_service=self.authorize_service,
+                token_service=self.token_service,
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+                scopes=self.scopes.split(',')
+            )
+            self.credential_manager = CredentialManager(self.service_information)
+            self.credential_manager.init_with_client_credentials()
+        except Exception as ex:
+            raise InvalidSourceException(
+                f"Error in DigitalHubConnector init: {ex}"
+            )
         logger.info("DigitalHubConnector __init__")
         super().__init__()
 
@@ -124,7 +149,7 @@ class DigitalHubConnector(Source):
     def get_dataitems(self):
         logger.info("DigitalHubConnector.get_dataitems")
         self.service_entity = self.get_service()
-        for itemNode in CoreHelper.getDataItems("http://host.docker.internal:9090/api/v1/dataitems"):
+        for itemNode in CoreHelper.getDataItems(self.apiUrl, self.credential_manager._access_token):
             item = None
             if itemNode['spec']['path'].startswith("s3"):
                 item = S3Parser(itemNode)
