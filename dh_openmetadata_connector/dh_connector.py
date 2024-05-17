@@ -50,12 +50,12 @@ class DigitalHubConnector(Source):
         self.service_connection = config.serviceConnection.__root__.config
 
         try:
-            self.apiUrl: str = self.service_connection.connectionOptions.__root__.get("dhcore-api")
-            self.authorize_service: str = self.service_connection.connectionOptions.__root__.get("dhcore-authorize_service") 
-            self.token_service: str = self.service_connection.connectionOptions.__root__.get("dhcore-token_service")  
-            self.client_id: str = self.service_connection.connectionOptions.__root__.get("dhcore-client-id") 
-            self.client_secret: str = self.service_connection.connectionOptions.__root__.get("dhcore-client-secret") 
-            self.scopes: str = self.service_connection.connectionOptions.__root__.get("dhcore-scopes") 
+            self.apiUrl: str = self.service_connection.connectionOptions.__root__.get("api-url")
+            self.authorize_service: str = self.service_connection.connectionOptions.__root__.get("authorize-service") 
+            self.token_service: str = self.service_connection.connectionOptions.__root__.get("token-service")  
+            self.client_id: str = self.service_connection.connectionOptions.__root__.get("client-id") 
+            self.client_secret: str = self.service_connection.connectionOptions.__root__.get("client-secret") 
+            self.scopes: str = self.service_connection.connectionOptions.__root__.get("scopes") 
             self.service_information = ServiceInformation(
                 authorize_service=self.authorize_service,
                 token_service=self.token_service,
