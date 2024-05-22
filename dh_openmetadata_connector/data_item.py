@@ -23,7 +23,7 @@ class DataItemParser:
     def fillColumns(self, item):
         self.columns: list[TableColumn] = []
         previewMap = {}
-        if item['status'].get('preview') and item['status']['preview']['cols']:
+        if item['status'].get('preview') and item['status']['preview'].get('cols'):
             for col in item['status']['preview']['cols']:
                 previewMap[col['name']] = col
 
