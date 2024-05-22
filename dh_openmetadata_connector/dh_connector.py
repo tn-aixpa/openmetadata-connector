@@ -26,6 +26,8 @@ from metadata.generated.schema.entity.data.table import (
     Column,
     DataType,
     Table,
+    TableData,
+    ColumnName
 )
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
 from metadata.utils.logger import ingestion_logger
@@ -119,6 +121,29 @@ class DigitalHubConnector(Source):
             columns=itemColumns,
         )
         return create_table
+    
+    def add_table_sampladata(self, item):
+        if len(item.columns) > 0:
+            columnNames: list[ColumnName] = []
+            sampleData: list[list] = []
+
+            for c in item.columns:
+                columnNames.append(c.name)
+                for rowIndex, preview in enumerate(c.preview):
+                    objectList = []
+                    if len(sampleData) <= rowIndex:
+                        sampleData.append(objectList)
+                    else:
+                        objectList = sampleData[rowIndex]
+                    objectList.append(preview)
+            
+            td = TableData()
+            td.columns = columnNames
+            td.rows = sampleData
+            table_entity: Table = self.metadata.get_by_name(
+                entity=Table, fqn=f"{self.config.serviceName}.{item.dbName}.{item.dbSchema}.{item.key}"
+            )            
+            self.metadata.ingest_table_sample_data(table_entity, td)
 
     def _iter(self) -> Iterable[Either[Entity]]:
         logger.info("DigitalHubConnector._iter")
@@ -161,4 +186,6 @@ class DigitalHubConnector(Source):
             yield schema_request
             table_request = self.create_table_request(item)
             yield table_request
+            self.add_table_sampladata(item)
+
 

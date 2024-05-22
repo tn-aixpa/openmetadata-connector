@@ -11,10 +11,13 @@ class TableColumn:
 
 class DataItemParser:
 
-    def getDataType(type):
+    def getDataType(type) -> str:
+        uType = type.upper()
         try:
-            return DataType(type.upper())
+            return DataType(uType)
         except Exception:
+            if uType == "INTEGER":
+                return "INT"
             return DataType.UNKNOWN
 
     def fillColumns(self, item):

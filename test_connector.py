@@ -20,10 +20,13 @@ from metadata.generated.schema.entity.data.table import (
     Column,
     DataType,
     Table,
+    TableData,
+    ColumnName
 )
 from dh_openmetadata_connector.core_helper import (CoreHelper)
 from dh_openmetadata_connector.data_item import (PostgresParser, S3Parser)
-
+from oauth2_client.credentials_manager import CredentialManager, ServiceInformation, OAuthError
+import json
 
 # DatabaseService -> Database -> Schema -> Table
 
@@ -76,13 +79,44 @@ def createTable(metadata, fullyQualifiedName, item):
         displayName=item.dbTable,
         databaseSchema=fullyQualifiedName,
         columns=columns,
+        sampleData=td
     )
     table_entity = metadata.create_or_update(create_table) 
+
+    td = TableData()
+    if len(item.columns) > 0:
+        columnNames: list[ColumnName] = []
+        sampleData: list[list] = []
+        for c in item.columns:
+            columnNames.append(c.name)
+            for rowIndex, preview in enumerate(c.preview):
+                objectList = []
+                if len(sampleData) <= rowIndex:
+                    sampleData.append(objectList)
+                else:
+                    objectList = sampleData[rowIndex]
+                objectList.append(preview)
+        
+        td.columns = columnNames
+        td.rows = sampleData
+        metadata.ingest_table_sample_data(table_entity, td)
+
     #print(table_entity.json())   
     return table_entity
 
 def get_dataitems(metadata, postres_service, s3_service):
-    for itemNode in CoreHelper.getDataItems("http://localhost:9090/api/v1/dataitems"):
+    service_information = ServiceInformation(
+        authorize_service='https://aac.digitalhub-dev.smartcommunitylab.it/oauth/authorize',
+        token_service='https://aac.digitalhub-dev.smartcommunitylab.it/oauth/token',
+        client_id='',
+        client_secret='',
+        scopes=['tenant1-core']
+    )    
+    manager = CredentialManager(service_information)
+    manager.init_with_client_credentials()
+    for itemNode in CoreHelper.getDataItems("https://core.tenant1.digitalhub-dev.smartcommunitylab.it/api/v1", manager._access_token):
+        print("----- item -----")
+        print(json.dumps(itemNode))
         if itemNode['spec']['path'].startswith("s3"):
             item = S3Parser(itemNode)
             database = createDatabase(metadata, s3_service.fullyQualifiedName, item.dbName)
@@ -97,7 +131,7 @@ server_config = OpenMetadataConnection(
     hostPort="http://localhost:8585/api",
     authProvider=AuthProvider.openmetadata,
     securityConfig=OpenMetadataJWTClientConfig(
-        jwtToken="eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImluZ2VzdGlvbi1ib3QiLCJlbWFpbCI6ImluZ2VzdGlvbi1ib3RAb3Blbm1ldGFkYXRhLm9yZyIsImlzQm90Ijp0cnVlLCJ0b2tlblR5cGUiOiJCT1QiLCJpYXQiOjE3MTU2MDE2NzMsImV4cCI6bnVsbH0.ZHqpBVIBKR-iSMTSBGWpCWNK1113sHlWY-JeLvNDna8QQ3MOSItFjiTe-IAon_JzkCowbpgKX7OjsJhSW4TgiNToPVzcInAAQGBnTV8re-k3ql2RJAOXSjzf3thpLXM3JYbOcvMfsPgF9GbkgVz9y0Tr5Tsmmw-mmDZRLpontnUbpBSYwFvv2aihodPeFZgJJUUjtnghQQ1Q1GUZpxiwnHntIHnPYMHFTl6O3eh5uJvwV46cTdHC6R5KuitnmAAv9WPuu9OlmemswsOdodZaGTaIb0vUe05r139r3QiEPbfofGw-9tu7JOD5fZwE-wFjw2Th_peI6Wf8U5ftImYvsw",
+        jwtToken="eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImluZ2VzdGlvbi1ib3QiLCJlbWFpbCI6ImluZ2VzdGlvbi1ib3RAb3Blbm1ldGFkYXRhLm9yZyIsImlzQm90Ijp0cnVlLCJ0b2tlblR5cGUiOiJCT1QiLCJpYXQiOjE3MTU5NDM1MzYsImV4cCI6bnVsbH0.fff4hCoHvdtRcUZLGqezptUDcSWaRhnf6CMhX1jogMCdYjoBLg9w0VdyStSZ4g_bZB36dyLYSgK4VidNEZkQ46RZO_FZQiN5oErqm5qa1Frd2Y4HI7QK6DDxbF7G0djs4UJfNpoQ3nH6fwd5ZlGKylq9QSb8glrtMOcKjUZnHBRVi4b1TtVgVlKBRDUL1Bn2ioj452OB8tB7-JoX2xwjQ7lo2jeczoE87lOEOeh0BxLPhsgeAPDIvUWBaPvdhH3_lCHprLk0mkz_OjxzlX_XMsR6CP03-R-sJYI-ILgKSbYyDxWD9J1Fbltza9-Ck6-o1yBdLhGcptNb_EgitCupiQ",
     ),
 )
 
