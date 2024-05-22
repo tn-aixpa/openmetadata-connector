@@ -175,17 +175,21 @@ class DigitalHubConnector(Source):
         logger.info("DigitalHubConnector.get_dataitems")
         self.service_entity = self.get_service()
         for itemNode in CoreHelper.getDataItems(self.apiUrl, self.credential_manager._access_token):
-            item = None
-            if itemNode['spec']['path'].startswith("s3"):
-                item = S3Parser(itemNode)
-            else:
-                item = PostgresParser(itemNode)
-            database_request = self.create_db_request(item)
-            yield database_request
-            schema_request = self.crate_schema_request(item)
-            yield schema_request
-            table_request = self.create_table_request(item)
-            yield table_request
-            self.add_table_sampladata(item)
+            #check kind == table
+            if itemNode['kind'] == 'table':
+                item = None
+                if itemNode['spec']['path'].startswith("s3"):
+                    item = S3Parser(itemNode)
+                elif itemNode['spec']['path'].startswith("sql"):
+                    item = PostgresParser(itemNode)
+                else:
+                    continue
+                database_request = self.create_db_request(item)
+                yield database_request
+                schema_request = self.crate_schema_request(item)
+                yield schema_request
+                table_request = self.create_table_request(item)
+                yield table_request
+                self.add_table_sampladata(item)
 
 
