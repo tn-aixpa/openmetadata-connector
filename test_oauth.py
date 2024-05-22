@@ -2,6 +2,15 @@ from oauth2_client.credentials_manager import CredentialManager, ServiceInformat
 from dh_openmetadata_connector.core_helper import (CoreHelper)
 import json
 
+itemTest = {}
+itemTest['metadata'] = {}
+itemTest['metadata']['openmetadata'] = {}
+itemTest['metadata']['openmetadata']['publish'] = True
+if itemTest['metadata'].get('openmetadata') and itemTest['metadata']['openmetadata'].get('publish'):
+    print("true")
+else:
+    print("false")
+
 service_information = ServiceInformation(
     authorize_service='https://aac.digitalhub-dev.smartcommunitylab.it/oauth/authorize',
     token_service='https://aac.digitalhub-dev.smartcommunitylab.it/oauth/token',
