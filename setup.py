@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-base_requirements = {"openmetadata-ingestion==1.3.1"}
+base_requirements = {"openmetadata-ingestion==1.4.1"}
 
 setup(
     name="DigitalHubConnector",

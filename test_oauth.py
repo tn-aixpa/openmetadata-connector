@@ -16,7 +16,7 @@ service_information = ServiceInformation(
     token_service='https://aac.digitalhub-dev.smartcommunitylab.it/oauth/token',
     client_id='',
     client_secret='',
-    scopes=['omd']
+    scopes=['tenant1-core']
 )
 
 manager = CredentialManager(service_information)

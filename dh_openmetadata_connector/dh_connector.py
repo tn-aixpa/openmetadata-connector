@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Optional
 
 from metadata.ingestion.api.common import Entity
 from metadata.ingestion.api.steps import Source, InvalidSourceException
@@ -76,7 +76,7 @@ class DigitalHubConnector(Source):
 
     @classmethod
     def create(
-        cls, config_dict: dict, metadata_config: OpenMetadataConnection
+        cls, config_dict: dict, metadata_config: OpenMetadataConnection, pipeline_name: Optional[str]
     ) -> "DigitalHubConnector":
         config: WorkflowSource = WorkflowSource.parse_obj(config_dict)
         return cls(config, metadata_config)
@@ -157,6 +157,7 @@ class DigitalHubConnector(Source):
                     right=item
                 )
         except Exception as ex:
+            logger.error(f"Error:{ex}")
             yield Either(
                 left=StackTraceError(
                     name="DH Error",
@@ -178,7 +179,7 @@ class DigitalHubConnector(Source):
             #check kind == table
             if itemNode['kind'] == 'table':
                 #check publish
-                if item['metadata'].get('openmetadata') and item['metadata']['openmetadata'].get('publish'):
+                if itemNode['metadata'].get('openmetadata') and itemNode['metadata']['openmetadata'].get('publish'):
                     item = None
                     if itemNode['spec']['path'].startswith("s3"):
                         item = S3Parser(itemNode)
