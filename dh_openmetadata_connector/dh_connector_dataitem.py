@@ -41,7 +41,7 @@ import traceback
 
 logger = ingestion_logger()
 
-class DigitalHubConnector(Source):
+class DigitalHubConnectorDataItem(Source):
     """
     Custom connector to ingest Database metadata
     """
@@ -49,15 +49,15 @@ class DigitalHubConnector(Source):
     def __init__(self, config: WorkflowSource, metadata: OpenMetadata):
         self.config = config
         self.metadata = metadata
-        self.service_connection = config.serviceConnection.__root__.config
+        self.service_connection = config.serviceConnection.root.config
 
         try:
-            self.apiUrl: str = self.service_connection.connectionOptions.__root__.get("api-url")
-            self.authorize_service: str = self.service_connection.connectionOptions.__root__.get("authorize-service") 
-            self.token_service: str = self.service_connection.connectionOptions.__root__.get("token-service")  
-            self.client_id: str = self.service_connection.connectionOptions.__root__.get("client-id") 
-            self.client_secret: str = self.service_connection.connectionOptions.__root__.get("client-secret") 
-            self.scopes: str = self.service_connection.connectionOptions.__root__.get("scopes") 
+            self.apiUrl: str = self.service_connection.connectionOptions.root.get("api-url")
+            self.authorize_service: str = self.service_connection.connectionOptions.root.get("authorize-service") 
+            self.token_service: str = self.service_connection.connectionOptions.root.get("token-service")  
+            self.client_id: str = self.service_connection.connectionOptions.root.get("client-id") 
+            self.client_secret: str = self.service_connection.connectionOptions.root.get("client-secret") 
+            self.scopes: str = self.service_connection.connectionOptions.root.get("scopes") 
             self.service_information = ServiceInformation(
                 authorize_service=self.authorize_service,
                 token_service=self.token_service,
@@ -69,15 +69,15 @@ class DigitalHubConnector(Source):
             self.credential_manager.init_with_client_credentials()
         except Exception as ex:
             raise InvalidSourceException(
-                f"Error in DigitalHubConnector init: {ex}"
+                f"Error in DigitalHubConnectorDataItem init: {ex}"
             )
-        logger.info("DigitalHubConnector __init__")
+        logger.info("DigitalHubConnectorDataItem __init__")
         super().__init__()
 
     @classmethod
     def create(
         cls, config_dict: dict, metadata_config: OpenMetadataConnection, pipeline_name: Optional[str]
-    ) -> "DigitalHubConnector":
+    ) -> "DigitalHubConnectorDataItem":
         config: WorkflowSource = WorkflowSource.parse_obj(config_dict)
         return cls(config, metadata_config)
 
@@ -146,7 +146,7 @@ class DigitalHubConnector(Source):
             self.metadata.ingest_table_sample_data(table_entity, td)
 
     def _iter(self) -> Iterable[Either[Entity]]:
-        logger.info("DigitalHubConnector._iter")
+        logger.info("DigitalHubConnectorDataItem._iter")
         yield Either(
             right=self.create_service_request()
         )
@@ -173,7 +173,7 @@ class DigitalHubConnector(Source):
         pass
 
     def get_dataitems(self):
-        logger.info("DigitalHubConnector.get_dataitems")
+        logger.info("DigitalHubConnectorDataItem.get_dataitems")
         self.service_entity = self.get_service()
         for itemNode in CoreHelper.getDataItems(self.apiUrl, self.credential_manager._access_token):
             #check kind == table
