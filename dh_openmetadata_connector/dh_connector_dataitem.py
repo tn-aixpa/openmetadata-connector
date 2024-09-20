@@ -1,3 +1,4 @@
+import re 
 from typing import Iterable, Optional
 
 from metadata.ingestion.api.common import Entity
@@ -58,6 +59,8 @@ class DigitalHubConnectorDataItem(Source):
             self.client_id: str = self.service_connection.connectionOptions.root.get("client-id") 
             self.client_secret: str = self.service_connection.connectionOptions.root.get("client-secret") 
             self.scopes: str = self.service_connection.connectionOptions.root.get("scopes") 
+            filters : str = self.service_connection.connectionOptions.root.get("project-filters")
+            self.projectFilters: list[str] = filters.split(',')
             self.service_information = ServiceInformation(
                 authorize_service=self.authorize_service,
                 token_service=self.token_service,
@@ -176,23 +179,37 @@ class DigitalHubConnectorDataItem(Source):
         logger.info("DigitalHubConnectorDataItem.get_dataitems")
         self.service_entity = self.get_service()
         for itemNode in CoreHelper.getDataItems(self.apiUrl, self.credential_manager._access_token):
+            logger.info("get item -> " + itemNode['key'])
             #check kind == table
             if itemNode['kind'] == 'table':
                 #check publish
                 if itemNode['metadata'].get('openmetadata') and itemNode['metadata']['openmetadata'].get('publish'):
-                    item = None
-                    if itemNode['spec']['path'].startswith("s3"):
-                        item = S3Parser(itemNode)
-                    elif itemNode['spec']['path'].startswith("sql"):
-                        item = PostgresParser(itemNode)
+                    publishItem = False
+                    #check project filters
+                    if((self.projectFilters) and (len(self.projectFilters) > 0)):
+                        for f in self.projectFilters:
+                            regex = re.compile(f, re.IGNORECASE)
+                            if regex.match(itemNode['project']):
+                                publishItem = True
+                                break
                     else:
-                        continue
-                    database_request = self.create_db_request(item)
-                    yield database_request
-                    schema_request = self.crate_schema_request(item)
-                    yield schema_request
-                    table_request = self.create_table_request(item)
-                    yield table_request
-                    self.add_table_sampladata(item)
+                        publishItem = True
+
+                    if(publishItem):
+                        logger.info("parse item -> " + itemNode['key'])
+                        item = None
+                        if itemNode['spec']['path'].startswith("s3"):
+                            item = S3Parser(itemNode)
+                        elif itemNode['spec']['path'].startswith("sql"):
+                            item = PostgresParser(itemNode)
+                        else:
+                            continue
+                        database_request = self.create_db_request(item)
+                        yield database_request
+                        schema_request = self.crate_schema_request(item)
+                        yield schema_request
+                        table_request = self.create_table_request(item)
+                        yield table_request
+                        self.add_table_sampladata(item)
 
 
