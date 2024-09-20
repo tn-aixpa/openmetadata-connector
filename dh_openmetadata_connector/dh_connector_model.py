@@ -1,3 +1,4 @@
+import re 
 from typing import Iterable, Optional
 
 from metadata.ingestion.api.common import Entity
@@ -40,7 +41,9 @@ class DigitalHubConnectorModel(Source):
             self.token_service: str = self.service_connection.connectionOptions.root.get("token-service")  
             self.client_id: str = self.service_connection.connectionOptions.root.get("client-id") 
             self.client_secret: str = self.service_connection.connectionOptions.root.get("client-secret") 
-            self.scopes: str = self.service_connection.connectionOptions.root.get("scopes") 
+            self.scopes: str = self.service_connection.connectionOptions.root.get("scopes")
+            filters : str = self.service_connection.connectionOptions.root.get("project-filters")
+            self.projectFilters: list[str] = filters.split(',')
             self.service_information = ServiceInformation(
                 authorize_service=self.authorize_service,
                 token_service=self.token_service,
@@ -79,13 +82,13 @@ class DigitalHubConnectorModel(Source):
 
     def create_model_request(self, item):
         params: list[MlHyperParameter] = []
-        for p in item.parameters:
-            params.append(
-                MlHyperParameter(
+        for p in item.parameters:            
+            hp = MlHyperParameter(
                     name=p.name,
                     value=str(p.value)
                 )
-            )
+            #logger.info("MlHyperParameter:" + hp.json())
+            params.append(hp)
         
         create_model = CreateMlModelRequest(
             name=item.key,
@@ -128,11 +131,25 @@ class DigitalHubConnectorModel(Source):
         logger.info("DigitalHubConnectorModel.get_models")
         self.service_entity = self.get_service()
         for itemNode in CoreHelper.getModels(self.apiUrl, self.credential_manager._access_token):
-            logger.info("parse item -> " + itemNode['key'])
+            logger.info("get item -> " + itemNode['key'])
             #check publish
-            #if itemNode['metadata'].get('openmetadata') and itemNode['metadata']['openmetadata'].get('publish'):
-            item = ModelParser(itemNode)
-            model_request = self.create_model_request(item)
-            yield model_request
+            if itemNode['metadata'].get('openmetadata') and itemNode['metadata']['openmetadata'].get('publish'):
+                publishItem = False
+                #check project filters
+                if((self.projectFilters) and (len(self.projectFilters) > 0)):
+                    for f in self.projectFilters:
+                        regex = re.compile(f, re.IGNORECASE)
+                        if regex.match(itemNode['project']):
+                            publishItem = True
+                            break
+                else:
+                    publishItem = True
+
+                if(publishItem):
+                    logger.info("parse item -> " + itemNode['key'])
+                    item = ModelParser(itemNode)
+                    model_request = self.create_model_request(item)
+                    yield model_request
+                
 
 
