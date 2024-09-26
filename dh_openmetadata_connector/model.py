@@ -26,9 +26,10 @@ class ModelParser:
         else:
             self.version = item['version']
         
+        self.type = item['key'].replace('store://', '').split('/')[1]
         self.source = item['key']
         self.kind = item['kind'] 
-        self.key = item['kind'] + "_" + item['project'] + "_" + item['name']
+        self.key = self.type + "_" + item['project'] + "_" + item['name']
         self.path = item['spec']['path'] 
         
         if item['spec'].get('algorithm'):
