@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
 from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
     OpenMetadataConnection, AuthProvider,

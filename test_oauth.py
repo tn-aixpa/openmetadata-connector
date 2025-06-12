@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from oauth2_client.credentials_manager import CredentialManager, ServiceInformation, OAuthError
 from dh_openmetadata_connector.core_helper import (CoreHelper)
 import json

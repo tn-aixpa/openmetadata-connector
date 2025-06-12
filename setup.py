@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from setuptools import setup, find_packages
 
 base_requirements = {"openmetadata-ingestion==1.5.3"}
@@ -6,7 +7,7 @@ setup(
     name="DigitalHubConnector",
     version="0.0.1",
     url="https://open-metadata.org/",
-    author="FBK",
+    author="DSLab – Fondazione Bruno Kessler",
     license="Apache License 2.0",
     description="Ingestion Framework for OpenMetadata",
     long_description_content_type="text/markdown",

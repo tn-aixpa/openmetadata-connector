@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 FROM openmetadata/ingestion:1.5.3
 
 # Let's use the same workdir as the ingestion image
