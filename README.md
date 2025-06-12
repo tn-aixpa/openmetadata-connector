@@ -1,6 +1,6 @@
 # OpenMetadata Connector
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/scc-digitalhub/repo-template/release.yaml?event=release) [![license](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/scc-digitalhub/digitalhub-core/LICENSE) ![GitHub Release](https://img.shields.io/github/v/release/scc-digitalhub/repo-template)
+[![license](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/scc-digitalhub/openmetadata-connector/LICENSE)
 ![Status](https://img.shields.io/badge/status-stable-gold)
 
 This project allows to create a custom connetor for injection of dataitem entities from a DH core platform into a OpenMetadata server.
