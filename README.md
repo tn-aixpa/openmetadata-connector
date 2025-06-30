@@ -1,6 +1,6 @@
 # OpenMetadata Connector
 
-[![license](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/scc-digitalhub/openmetadata-connector/LICENSE)
+[![license](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/tn-aixpa/openmetadata-connector/LICENSE)
 ![Status](https://img.shields.io/badge/status-stable-gold)
 
 This project allows to create a custom connetor for injection of dataitem entities from a DH core platform into a OpenMetadata server.
